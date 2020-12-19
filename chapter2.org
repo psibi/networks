@@ -1,0 +1,137 @@
+* Ethernet
+
+- Ethernet is the standard local area network protocol with an
+  overwhelming share of the market.
+- Alternative protocols: ATM, token ring.
+- Ethernet is a broadcast protocol. Every frame transmitted can go to
+  any other host on thata section of the network.
+- The network card or the device driver separates out data intended
+  for your system from the data meant for other systems.
+- A section of Ethernet wehre all the hosts can communicate directly
+  with each other without involving a router is called a *brodcast
+  domain*, a *segment* or a *local area network (LAN)*.
+- Each host is wired to a port on an Ethernet *switch*.
+- Every device on the Ethernet needs a unique identifier called a MAC
+  address or Ethernet address.
+- A MAC address is 48 bits longs, usually written as six pairs of colon
+  separated hexadecimal numbers.
+- While Ethernet is a broadcast medium, and every host on an Ethernet
+  can spray traffic across the whole local network, [[https://en.wikipedia.org/wiki/Network_switch][switches]] reduce
+  the amount of traffic sent to each host by filetering each port by
+  MAC address.
+
+* Speed and Duplex
+
+- Ethernet comes in a variety of speeds.
+- Most desktop network interfaces do at least 100Mbps or 1 gigabit per
+  second (Gbps). Most servers do 10Gbs.
+- Dupleex refers to how each end handles transmitting and receiving
+  data. An interface running at half duplex can either receive or
+  transmit data at any instance, but not both. A full duplex
+  connection can simultaneously send and receive.
+- For connection to work well, both sides must agree on speed and
+  duplex. If you sever insists on speaking 1Gbs, but the switch
+  insists on 100Mbps, the connection won't work.
+- Modern equipment /autonegotiates/ connection speed and duplex
+  agreeing on the fastest settings both sides support.
+
+* Fragments and MTU
+
+- TCP/IP wraps one layer inside another untill you create a frame and
+  throw it across the network. Every datalink type from Ethernet to
+  [[https://en.wikipedia.org/wiki/Optical_Carrier_transmission_rates#OC-48_/_STM-16_/_2.5G_SONET][OC48]] has a maximum frame size.
+- If a layer receives a chunk of data too large for it, it fragments
+  the data into pieces that it can manager. When the data reaches the
+  destination, the destination system reassembles those fragments into
+  a complete unit.
+- Most systems set a maximum transmission unit (MTU), the largets size
+  that can fit through the datalink layer. The upper layers of the
+  stack respect this MTU, eliminating obvious problems.
+- Older Ethernet has an MTU of 1500 bytes. Some 100Mbs Ethernet and
+  faster Ethernet support 9000 bye "jumpo" frames. Many gigabit
+  environments don't choose to enable jumbo frames.
+- The MTU should be set per network. The process to change MTU size is
+  entirely OS dependent.
+
+Let's check MTU of my wireless card in my desktop machine:
+
+#+begin_src sh :exports both :eval never-export :results verbatim
+ifconfig | rg wlp
+#+end_src
+
+#+RESULTS:
+: wlp0s20f3: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+
+From looking at [[https://tldp.org/LDP/nag2/x-087-2-iface.ifconfig.html][some docs]], I can figure out that the unit is bytes and
+hence it seems my datalink layer has a MTU of size 1500 bytes.
+
+* Ethernet Wires
+
+- Most organizations Ethernets run over physical wire. Ethernet can
+  work over radio waves too but that has maximum limit on the amount
+  of traffic the whole netwwork can put through it.
+- Ethernet cabale is ranked by category (or *cat*) numbrs.
+  - *cat 5* cabale is the lowest common denominaator. It has a maximum
+    throughput of 100Mbs.
+  - *cat 6* cable can handle 10Gbps.
+  - *cat 7* cable can handle 40Gbs and is expected to replace HDMI
+    cables.
+
+* Testing Ethernet: ping
+
+- *ping* is used to check quickly if hosts are live in the
+  network. Although, that's not what it exactly does but it's useful
+  for quickly poking the network.
+
+#+begin_src sh :exports both :eval never-export :results verbatim
+ping -c 4 192.168.0.1
+#+end_src
+
+#+RESULTS:
+: PING 192.168.0.1 (192.168.0.1) 56(84) bytes of data.
+: 64 bytes from 192.168.0.1: icmp_seq=1 ttl=64 time=1.86 ms
+: 64 bytes from 192.168.0.1: icmp_seq=2 ttl=64 time=2.53 ms
+: 64 bytes from 192.168.0.1: icmp_seq=3 ttl=64 time=3.35 ms
+: 64 bytes from 192.168.0.1: icmp_seq=4 ttl=64 time=7.69 ms
+: 
+: --- 192.168.0.1 ping statistics ---
+: 4 packets transmitted, 4 received, 0% packet loss, time 3005ms
+: rtt min/avg/max/mdev = 1.868/3.864/7.696/2.274 ms
+
+If a ping says that the host isn't reachable, that doesn't mean it's
+not on the network. You should look into ARP to dig deeper.
+
+* The Address Resolution Protocol
+
+- The *Address Resolution Protocol* or ARP, maps Ethernet addresses to
+  IPv4 addresses and back. ARP is the glue that attaches the network
+  layer to the datalink layer.
+- A host that needs to transmit ata to another host on the local
+  Ethernet first broadcasts an Ethernet request asking "Which MAC
+  address is responsible for this IP address?" These broadcasts go to
+  all the hosts attached to the Ethernet network. A host that receives
+  a request for an IP it owns jump up, waves it's hand and shouts "Me!
+  I have that address at MAC address..." When the original host gets
+  this response, it adds the IP and MAC address to it's ARP table. The
+  original host can then send the destination host traffic.
+
+** The ARP Cache
+
+- When a host maps a MAC address to an IP address, it caches the
+  information in the ARP table for a few minutes. Once the cache
+  expires, it req-queries the network via ARP.
+
+** Viewing the ARP Cache
+
+#+begin_src sh :exports both :eval never-export :results verbatim
+arp -a
+#+end_src
+
+#+RESULTS:
+: _gateway (192.168.0.1) at 50:d4:f7:0e:d0:b3 [ether] on wlp0s20f3
+: ? (192.168.0.151) at 20:df:b9:26:f3:47 [ether] on wlp0s20f3
+: ? (192.168.0.191) at 54:35:30:02:25:17 [ether] on wlp0s20f3
+: ? (192.168.0.124) at cc:f7:35:da:91:dc [ether] on wlp0s20f3
+
+- The *arp* command just like everything else use the system name
+  service to get names from IP addresses.
