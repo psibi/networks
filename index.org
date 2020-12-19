@@ -5,7 +5,8 @@ Michael W Lucas. You can access it [[https://psibi.in/networks][https://psibi.in
 
 ** Chapters
 
-
+- [[file:chapter0.org][Chapter 0: The Problem]]
+- [[file:chapter1.org][Chapter 1: Network Layers]]
 
 ** Static images
 
@@ -13,7 +14,7 @@ Michael W Lucas. You can access it [[https://psibi.in/networks][https://psibi.in
 - Create symbolic of it in the main directory:
 
 #+begin_src sh
-ln -s $PWD/docs/assets/ $PWD/assets
+ln -s ./docs/assets/ ./assets
 #+end_src
 
 ** Soure code highlighting
