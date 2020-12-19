@@ -135,3 +135,269 @@ arp -a
 
 - The *arp* command just like everything else use the system name
   service to get names from IP addresses.
+
+** Missing ARP
+
+- If a host doesn't have an ARP entry, your host either hasn't
+  communicated with that host before, or the target host's ARP cache
+  entry has expired.
+- You can do a ping check to see if the host is reachable. All you
+  know from the ping test is that host is/isn't responding to a layer
+  3 (network) request. It tells you nothing about datalink or physical
+  layers.
+- If it won't ping, but has an ARP. Then following could have happened:
+  - Maybe the system owner configured the machine to ignore ping
+    request.
+  - Maybe the system is running in a single user or recovery mode
+    which doesn't have enough of TCP/IP stack.
+  - Maybe your network administrator filters ping from the local
+    network.
+
+** Empty ARP
+
+- If your system's ARP table is empty, or the only entry is the
+  localhost, try to connect to a few hosts on the local network. Ping
+  the default gateway or a couploe of servers you know are
+  local. Thses might populate the system's ARP table.
+
+* Neighbor Discovery
+
+- Neighbor Discovery (ND) is the IPv6 datalink protocol replacing the
+  ARP used in IPv6 Ethernet.
+- ND is supposed to work on all datalink protocols, not just
+  Ethernet. But Ethernet is still the most common.
+- ND maps MAC addresses to IPv6 addresses.
+- Similar to ARP, neighbor requests are broadcast across the local
+  network, and an individual host responds. Respones are cached in a
+  table until they expire.
+- Unlike ARP, where entries are either present or missing, neighbor
+  cache entries can have a few different states.
+  - *Reachable* address are currently live on the network.
+  - *Stale* addresses were live, but have since expired from the cache.
+  - *Permanent* addresses are either local on the machine or special
+    purpose addresses that are always present.
+  - *Failed* addresses are neighbors that host has looked but not
+    found.
+
+** Windows ND
+
+- CLI tool is named *netsh* and is quite powerful.
+
+** Unix ND
+
+- Linux has put it as part of the *ip* command.
+- BSD has *ndp* command.
+
+#+begin_src sh :exports both :eval never-export :results verbatim
+ip -6 neigh show
+#+end_src
+
+* VLANs: One Cable, Multiple LANs
+
+- A local area network or LAN is an Ethernet broadcast domain.
+- All the hosts on the LAN see each other. But sometimes you need a
+  special purpose host on multiple LANs.
+
+** Virtual LANs
+
+- A *virtual* LAN or VLAN is an extra tag on Ethernet frames
+  indicating that they belong on a different LAN than the default.
+- Each VLAN is identified by a number from 1 to 4096.
+- For a VLAN to function, the switch port your hosts connect to needs
+  a VLAN configuration. Some switches auto-configure requested VLANs,
+  while others require manual intervention.
+- VLAN is also described as [[https://en.wikipedia.org/wiki/IEEE_802.1Q][802.1Q]].
+
+** VLAN Terminology
+
+- Different vendors have decided to use the same word to mean
+  different things.
+- Most problematic words are *trunk* and *tag*
+- According to one group of network equipment vendor, a *network
+  turnk* combines multiple physical layers into one datalink
+  layer. Your server gets two network cables, and you configure the
+  server to group them together into one connection. This creates
+  redundancy, so that a failure of one switch or one cable or one
+  network card doesn't disconnect the server from the network.
+- Many other network vendors have defined *network trunk * as one
+  network cable that carries multiple VLANs. But this has no
+  relationship with the first vendor's use of the word.
+- Some other vendors use the word VLAN.
+- Others talk about tagging or VLAN taging.
+
+* Datalink Errors
+
+- The datalink layer can go bad without completely failing.
+- You don't need to know the specifics of each error but the common
+  ones are:
+  - frame errors
+  - drops
+  - overruns
+  - collisions
+- These errors reduce performance, but don't necessarily bring the
+  link down.
+
+** Unix
+
+#+begin_src sh :exports both :eval never-export :results verbatim
+netstat -i
+#+end_src
+
+#+RESULTS:
+: Kernel Interface table
+: Iface      MTU    RX-OK RX-ERR RX-DRP RX-OVR    TX-OK TX-ERR TX-DRP TX-OVR Flg
+: br-e29ff  1500        0      0      0 0             0      0      0      0 BMU
+: docker0   1500        0      0      0 0             0      0      0      0 BMU
+: eno1      1500        0      0      0 0             0      0      0      0 BMU
+: lo       65536    11724      0      0 0         11724      0      0      0 LRU
+: wlp0s20f  1500  1303108      0      0 0        569602      0      0      0 BMRU
+
+Also, you can get detailed statistics:
+
+#+begin_src sh :exports both :eval never-export :results verbatim
+netstat -s
+#+end_src
+
+#+RESULTS:
+#+begin_example
+Ip:
+    Forwarding: 1
+    988519 total packets received
+    2 with invalid addresses
+    0 forwarded
+    0 incoming packets discarded
+    988502 incoming packets delivered
+    579833 requests sent out
+    65 dropped because of missing route
+Icmp:
+    97 ICMP messages received
+    0 input ICMP message failed
+    ICMP input histogram:
+        destination unreachable: 93
+        echo replies: 4
+    5968 ICMP messages sent
+    0 ICMP messages failed
+    ICMP output histogram:
+        destination unreachable: 5964
+        echo requests: 4
+IcmpMsg:
+        InType0: 4
+        InType3: 93
+        OutType3: 5964
+        OutType8: 4
+Tcp:
+    7316 active connection openings
+    0 passive connection openings
+    40 failed connection attempts
+    1862 connection resets received
+    62 connections established
+    410851 segments received
+    399065 segments sent out
+    3334 segments retransmitted
+    84 bad segments received
+    3285 resets sent
+Udp:
+    577520 packets received
+    6378 packets to unknown port received
+    0 packet receive errors
+    183176 packets sent
+    0 receive buffer errors
+    0 send buffer errors
+    IgnoredMulti: 13888
+UdpLite:
+TcpExt:
+    63 packets pruned from receive queue because of socket buffer overrun
+    13 ICMP packets dropped because they were out-of-window
+    2186 TCP sockets finished time wait in fast timer
+    16 packetes rejected in established connections because of timestamp
+    2963 delayed acks sent
+    7 delayed acks further delayed because of locked socket
+    Quick ack mode was activated 2361 times
+    227256 packet headers predicted
+    59516 acknowledgments not containing data payload received
+    38584 predicted acknowledgments
+    TCPSackRecovery: 176
+    Detected reordering 182 times using SACK
+    Detected reordering 2 times using time stamp
+    4 congestion windows fully recovered without slow start
+    2 congestion windows partially recovered using Hoe heuristic
+    TCPDSACKUndo: 32
+    234 congestion windows recovered without slow start after partial ack
+    TCPLostRetransmit: 1229
+    TCPSackFailures: 10
+    237 fast retransmits
+    28 retransmits in slow start
+    TCPTimeouts: 2113
+    TCPLossProbes: 1161
+    TCPLossProbeRecovery: 162
+    TCPSackRecoveryFail: 38
+    TCPBacklogCoalesce: 378
+    TCPDSACKOldSent: 2374
+    TCPDSACKOfoSent: 36
+    TCPDSACKRecv: 944
+    TCPDSACKOfoRecv: 12
+    1297 connections reset due to unexpected data
+    806 connections reset due to early user close
+    82 connections aborted due to timeout
+    1 times unable to send RST due to no memory
+    TCPDSACKIgnoredNoUndo: 279
+    TCPSpuriousRTOs: 4
+    TCPSackShifted: 61
+    TCPSackMerged: 89
+    TCPSackShiftFallback: 864
+    IPReversePathFilter: 10
+    TCPRcvCoalesce: 100850
+    TCPOFOQueue: 7863
+    TCPOFOMerge: 36
+    TCPChallengeACK: 86
+    TCPSYNChallenge: 84
+    TCPSpuriousRtxHostQueues: 53
+    TCPAutoCorking: 9615
+    TCPFromZeroWindowAdv: 1
+    TCPToZeroWindowAdv: 1
+    TCPWantZeroWindowAdv: 25
+    TCPSynRetrans: 673
+    TCPOrigDataSent: 107196
+    TCPHystartTrainDetect: 1
+    TCPHystartTrainCwnd: 16
+    TCPHystartDelayDetect: 7
+    TCPHystartDelayCwnd: 283
+    TCPACKSkippedSeq: 3
+    TCPACKSkippedChallenge: 1
+    TCPKeepAlive: 23124
+    TCPDelivered: 114351
+    TCPAckCompressed: 3247
+IpExt:
+    InNoRoutes: 3
+    InMcastPkts: 6144
+    OutMcastPkts: 1961
+    InBcastPkts: 13884
+    InOctets: 968024457
+    OutOctets: 88901471
+    InMcastOctets: 614036
+    OutMcastOctets: 322517
+    InBcastOctets: 2841440
+    InNoECTPkts: 1307793
+#+end_example
+
+** Windows
+
+If you have Ethernet interface, you can use the following to see the
+statistics:
+
+#+begin_src sh :exports both :eval never-export :results verbatim
+netstat -e
+#+end_src
+
+** Current or Old Errors
+
+- The error counts on both Unix and Windows systems are totals since
+  the system booted.
+- When you see errors on an interface, detrmine if they're increasing
+  or constatnt.
+
+* Configuring Ethernet
+
+- Most of the time, you won't need to configure anything on an
+  Ethernet card.
+- In Linux, you can use the *ethtool* to configure it.

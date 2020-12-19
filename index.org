@@ -7,6 +7,7 @@ Michael W Lucas. You can access it [[https://psibi.in/networks][https://psibi.in
 
 - [[file:chapter0.org][Chapter 0: The Problem]]
 - [[file:chapter1.org][Chapter 1: Network Layers]]
+- [[file:chapter2.org][Chapter 2: Ethernet]]
 
 ** Static images
 
