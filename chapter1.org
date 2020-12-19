@@ -43,4 +43,195 @@ The layered network model is often called a *network stack* or the
 ** Layer 4: Transport
 
 - The data you care about flows at the transport layer
+- A piece of transport layer data is a *segment*
+- Most common transport layer protocols:
+  - Internet Control Message Protocl (ICMP)
+  - Transmission Control Protocl (TCP)
+  - User Datagram Protocl (UDP)
 
+*** ICMP
+
+- Handles low level connectivity messages between hosts.
+- Every host that implements IP must also support ICMP.
+- ping are the most commonly known type of ICMP traffic, although many
+  core Internet functions rely on ICMP.
+- If a datalink-layer message is too large, the complaint passes over
+  ICMP.
+- ICMP is where hosts repsond to ping requests and tell traffic to go
+  around the other way.
+- Unilaterly blocking all ICMP is a good way to break applications.
+- Most of the time, ICMP runs silently in the background
+
+*** UDP/TCP
+
+- Both UDP and TCP carray application data between hosts.
+- They are so commona that the suite of internete protocls is usually
+  called TCP/IP.
+- Usually when using UDP, the reliability is handled in the
+  application rather than the network.
+- TPC includes error checking, congestion control and retransmission
+  of lost dta.
+
+** OSI layers
+
+- According to OSI model the next layers are session, presentation and
+  application.
+- The session layer handles opening, using and closing transport layer
+  connections.
+- The presentation layer lets program exchange data with one another.
+- The application layer is the actual protocol spoken over these
+  connections.
+
+** TCP/IP model
+
+- This model calls everything above the transport layer the
+  application layer. This includes protocols like HTTP, SMTP, LDAP
+  etc.
+
+* Layering in Practice
+
+- What happens when you open your web browser and call up a web page ?
+  - Transport layer in the OS kernel takes the request and slices it
+    into chunks small enough to fit into TCP segments (536 bytes or
+    smaller). It hands these segments down to the network layer.
+  - The network layer only cares about where the segment needs to
+    go. If the network layer knows how to reach the destination
+    address it wraps each segments with IP information to create a
+    package and hands the packet off to the datalink layer.
+  - The datalink layer doesn't know about IP address, let alone web
+    browsers. It only knows how to launch packets at a particular MAC
+    adddresses. This layers adds information for the physical protocol
+    to the packet, creating a frame and sends it across the wire.
+  - The wire carries the frame to the destination, where the target
+    computer strips off the layers, reassembles the request and hands
+    it up to the web server. The web server processes the request and
+    returns a response, which takes the same journey back.
+
+* Layers and Troubleshooting
+
+- If a lower level fails, all the layers above it also
+  fail. Troubleshooting the upper layer might indicate an error, but
+  won't expose the actual problem.
+
+
+todo: insert pic (page 19)
+
+** Physical troubleshooting
+
+- Offers two troubleshooting interfaces: interface commands and link
+  lights.
+- Unix system use *ifconfig* to display the link status.
+
+exports both :eval never-export 
+exports both :eval never-export :results value 
+
+#+begin_src sh :exports both :eval never-export :results verbatim
+ifconfig
+#+end_src
+
+#+RESULTS:
+#+begin_example
+br-e29ff4b1a70a: flags=4099<UP,BROADCAST,MULTICAST>  mtu 1500
+        inet 172.18.0.1  netmask 255.255.0.0  broadcast 172.18.255.255
+        ether 02:42:62:6f:87:1c  txqueuelen 0  (Ethernet)
+        RX packets 0  bytes 0 (0.0 B)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 0  bytes 0 (0.0 B)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+docker0: flags=4099<UP,BROADCAST,MULTICAST>  mtu 1500
+        inet 172.17.0.1  netmask 255.255.0.0  broadcast 172.17.255.255
+        ether 02:42:73:3b:6e:91  txqueuelen 0  (Ethernet)
+        RX packets 0  bytes 0 (0.0 B)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 0  bytes 0 (0.0 B)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+eno1: flags=4099<UP,BROADCAST,MULTICAST>  mtu 1500
+        ether 94:c6:91:a6:33:df  txqueuelen 1000  (Ethernet)
+        RX packets 0  bytes 0 (0.0 B)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 0  bytes 0 (0.0 B)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+        device interrupt 16  memory 0xa8b00000-a8b20000  
+
+lo: flags=73<UP,LOOPBACK,RUNNING>  mtu 65536
+        inet 127.0.0.1  netmask 255.0.0.0
+        inet6 ::1  prefixlen 128  scopeid 0x10<host>
+        loop  txqueuelen 1000  (Local Loopback)
+        RX packets 4726  bytes 573675 (573.6 KB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 4726  bytes 573675 (573.6 KB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+wlp0s20f3: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 192.168.0.181  netmask 255.255.255.0  broadcast 192.168.0.255
+        inet6 fe80::5c93:5b64:b975:da7  prefixlen 64  scopeid 0x20<link>
+        ether 38:ba:f8:2a:33:57  txqueuelen 1000  (Ethernet)
+        RX packets 873587  bytes 569915370 (569.9 MB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 330430  bytes 65882298 (65.8 MB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+#+end_example
+
+You can also use *ethtool* to see interface's negotiated speed and
+duplex:
+
+#+begin_src sh :exports both :eval never-export :results verbatim
+ethtool eno1
+#+end_src
+
+#+RESULTS:
+#+begin_example
+Settings for eno1:
+	Supported ports: [ TP ]
+	Supported link modes:   10baseT/Half 10baseT/Full 
+	                        100baseT/Half 100baseT/Full 
+	                        1000baseT/Full 
+	Supported pause frame use: No
+	Supports auto-negotiation: Yes
+	Supported FEC modes: Not reported
+	Advertised link modes:  10baseT/Half 10baseT/Full 
+	                        100baseT/Half 100baseT/Full 
+	                        1000baseT/Full 
+	Advertised pause frame use: No
+	Advertised auto-negotiation: Yes
+	Advertised FEC modes: Not reported
+	Speed: Unknown!
+	Duplex: Unknown! (255)
+	Port: Twisted Pair
+	PHYAD: 2
+	Transceiver: internal
+	Auto-negotiation: on
+	MDI-X: Unknown (auto)
+	Current message level: 0x00000007 (7)
+			       drv probe link
+	Link detected: no
+#+end_example
+
+The above output is expected since I only have wireless connection.
+
+** Datalink Troubleshooting
+
+- For common Ethernet network, the *arp* command is your friend. It
+  lists the other Ethernet addresses that your OS sees on the network.
+
+#+begin_src sh :exports both :eval never-export :results verbatim
+arp
+#+end_src
+
+#+RESULTS:
+: Address                  HWtype  HWaddress           Flags Mask            Iface
+: _gateway                 ether   ac:84:c6:a3:23:64   C                     wlp0s20f3
+
+** Network troubleshooting
+
+- Usualy tools like *ping* or *traceroute* are used.
+
+** Tranport troubleshooting
+
+- Use *netstat* to view established connections.
+- Use *netcat* to see if you can transmit data to another host.
+- Try *tcpdump* to see if data arrives at your server and verify your
+  host is actually sending data.
