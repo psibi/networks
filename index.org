@@ -1,0 +1,38 @@
+* Networks
+
+This contains my notes for the book *Networking for Systems Administrators* by
+Michael W Lucas. You can access it [[https://psibi.in/networks][https://psibi.in/networks]]
+
+** Chapters
+
+
+
+** Static images
+
+- Have images under /docs/assets/
+- Create symbolic of it in the main directory:
+
+#+begin_src sh
+ln -s $PWD/docs/assets/ $PWD/assets
+#+end_src
+
+** Soure code highlighting
+
+Generate [[file:docs/main.css][main.css]] file:
+
+#+begin_src sh
+pygmentize -S emacs -f html > docs/main.css
+#+end_src
+
+Then use a forked version of [[https://github.com/psibi/ox-twbs][ox-twbs]] to generate syntax highlighted
+html.
+
+** Publishing
+
+- Go to [[file:index.org][index.org]] file.
+- Invoke ~org-publish~
+
+** Contributing
+
+Contributions welcome. You would have to edit the [[https://en.wikipedia.org/wiki/Org-mode][org files]] in the
+[[https://github.com/psibi/awk][repository]] and send a PR!

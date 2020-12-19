@@ -1,0 +1,46 @@
+* Network Layers
+
+The layered network model is often called a *network stack* or the
+*TCP/IP* stack.
+
+** Common network layers
+
+- OSI (Open Systems Interconnect) seven layer model: More academic
+  than real world.
+- TCP/IP: Better fit for modern networks but lacks the details of the
+  OSI model.
+- This book: Slightly different.
+
+** Layer 1: Physical
+
+- Physical layer is the wire, although it can be radio waves or
+  coaxial cable or any number of things other than a typical Ethernet
+  wire.
+- Most servers connect to a network via an Ethernet cabale, usually
+  over a [[https://en.wikipedia.org/wiki/Category_5_cable][Cat5]] or [[https://en.wikipedia.org/wiki/Category_6_cable][Cat6]] cable but sometimes over optical fiber.
+- Even non Ethernet protocol such as Asynchronous transfer mode (ATM)
+  or Token ring or FDDI will probably use cat5 or cat6 or optical
+  fiber.
+- Physical layer traditionally has no intelligence.
+
+** Layer 2: Datalink
+
+- The datalink layer transforms the network's upper layers into the
+  signals transmitted over the wire.
+- Most environment use Ethernet as the datalink layer. A single lump
+  of datalink is called a *frame*.
+- If you're running IPv4, the datalink layer includer includes Media
+  Access Control (MAC) and the Address resolution protocol (ARP). IPv6
+  uses MAC addresses and Neighbor discover (ND).
+
+** Layer 3: Network
+
+- Network layer maps connectivity between hosts.
+- A single lump of network data is called a *packet*
+- The Internet uses the Internet protocol or IP. All versions of IP
+  give each host one or more unique IP addresses.
+
+** Layer 4: Transport
+
+- The data you care about flows at the transport layer
+

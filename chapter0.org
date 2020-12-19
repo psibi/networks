@@ -1,0 +1,53 @@
+* The Problem
+
+* Network Tools
+
+** ifconfig, route and ipconfig
+
+- A host's network configuration include it's IP addresses and gateway.
+- On Unix, you can use the *route* and *ifconfig* command to view
+  system's configuration.
+- On Windows, you can achieve the same using the *ifconfig* command.
+- Modern replacement on Linux: *ip* and *ethtool*
+
+** grep and findstr
+
+- Modern replacement on Linux: *ripgrep*
+- Windows: *findstr*
+
+** netstat
+
+- Used to display system's established network connections, what
+  connections the system can recieve and network statistics.
+
+** lsof
+
+- Lets you see which processes open which files.
+
+** route
+
+- Displays where the system sends traffic and gives you the ability to
+  change how the system delivers traffic.
+
+** tcpdump and Wireshark
+
+- *tcpdump* displays traffic to and from a server, even when the
+  server rejects the traffic. It is the fastest way to view network
+  traffic.
+- For more complicated analysis, you can use *Wireshark*.
+
+** netcat
+
+- Lets you listen to the network on a specific port and lets you send
+  arbitrary network traffic.
+
+** traceroute
+
+- Shows you the route the traffic takes and where the links break.
+
+** host and nslookup
+
+- *host* lets you peek at the DNS.
+- Windows equivalent is *nsloopkup*. Unix *nslookup* has been
+  deprecated, abandoned and then resurrected and repaied.
+- More advanced tool: *dig* or *drill*
