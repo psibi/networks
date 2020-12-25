@@ -1,0 +1,12 @@
+* IPv4
+
+- The Internet Protocol or IP is the glue that binds the Internet
+  together.
+- Hosts meant for end users, like desktops, laptops and tablets
+  normally get their configuration via the Dynamic Host Configuration
+  Protocol (DHCP).
+- To connect a host to a network it needs a valid IP address and a
+  subnet mask. If it needs to communicate with hosts beyond the local
+  network, it needs a default gateway.
+
+
