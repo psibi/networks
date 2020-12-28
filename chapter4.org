@@ -1,0 +1,13 @@
+* IPv6
+
+- [[https://en.wikipedia.org/wiki/IPv4_address_exhaustion][IPv4 address exhaustation has led to development of IPv6.]]
+
+* IPv6 essentials
+
+- IPv6 is a network layer protocol.
+- IPv6 uses 128 bit addresses, shown as eight colon separated groups
+  of four hexadecimal characters such as
+  *2a03:2880:2330:cf05:face:b00c:0:1*.
+- You access a IPv6 address in your browser by putting it inside
+  square brackets. Eg: [[http://\[::1\]:631/][http://[::1]:631/]]
+- With 128 bit addresses, every atom on Earth can have 10 addresses.
