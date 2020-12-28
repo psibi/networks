@@ -13,7 +13,7 @@
 
 - An IPv4 address ia a 32 bit number assigned to a specific network
   device globally unique in your network.
-- IP addresses are usually expressed as four eight-dit decimal
+- IP addresses are usually expressed as four eight-bit decimal
   numbers.
 - A block of IP addresses is called a network or *subnet*. Your
   organization ISP allocates a subnet to your organization and your
