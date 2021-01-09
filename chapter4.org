@@ -11,3 +11,136 @@
 - You access a IPv6 address in your browser by putting it inside
   square brackets. Eg: [[http://\[::1\]:631/][http://[::1]:631/]]
 - With 128 bit addresses, every atom on Earth can have 10 addresses.
+
+* Writing IPv6 Addresses
+
+- IPv6 addresses are long: 128 bits written as eight colon-delimited
+  groups of four hexadecimal characters.
+- As with IPv4 addresses, don't list the leading zeros in the
+  group. 2001:db8:000c:0000:0000:0000:000d:0001 is equivalent to
+  2001:db8:c:0:0:0:d:1.
+- When an IPv6 address includes multiple blocks of zeroes, you can
+  replace the longest string with two
+  colons. 2001:0db8:000c:0000:0000:0000:000d:0001 is equivalent to
+  2001:db8:c::d:1. Note that you can only do the double colon replace
+  once per IP address, otherwise it's ambigous.
+
+* IPv6 Netmasks
+
+- IPv6 is normally subnetted only at colon boundaries. Colons appear
+  every 16 bits (128/8 = 16), so the natural subnets are /16, /32,
+  /48, and /64.
+- The IPv6 standards recommed using /64 as the standard network on a
+  small network like an office LAN or your home.
+- A /64 contains $2^64$ addresses, more than enough for any Ethernet
+  broadcast domain.
+
+* IPv6 Autoconfiguration
+
+- In IPv6, the basic networking configuration is built into the
+  protocol.
+- IPv6 clients on a /64 network automataically learn their IPv6
+  address, and the router's through *router discovery*.
+- But IPv6 autoconfiguration does not support assigning DNS servers or
+  the options used for VoIP phones and other dumd devices. So they
+  need to be set manually or through IPv6 DHCP or DHCPv6.
+
+* Localhost Address
+
+- [[http:\[::1\]][http:[::1]​]]
+- IPv4 dedicates a whole /8 for localhost address. IPv6, more sensibly
+  uses only the single address.
+
+* Link-Local Addresses
+
+- IPv6 networks autoconfigure themselves, even without a router
+  present. If a host capable of IPv6 connects to a newtwork, it
+  presents an IPv6 address to the network.
+- All addresses beginning with *fe8* are link local addresses, valid
+  only on that specific interface's broadcast domain.
+- Link-local network are always /64 networks.
+- A link-local address usually appears with a percent sign and the
+  interface name or number at the end of the address.
+- Why link local addresses: They make standalone IPv6 networks self
+  configuring.
+
+* Viewing IPv6 Addresses
+
+- On Windows, use *ifconfig /all*
+- On Unix, you can use ifconfig or route with appropriate parameters.
+
+#+begin_src sh :exports both :eval never-export :results verbatim
+ifconfig wlp0s20f3
+#+end_src
+
+#+RESULTS:
+: wlp0s20f3: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+:         inet 192.168.0.195  netmask 255.255.255.0  broadcast 192.168.0.255
+:         inet6 fe80::443f:39ef:639a:de77  prefixlen 64  scopeid 0x20<link>
+:         ether 38:ba:f8:2a:33:57  txqueuelen 1000  (Ethernet)
+:         RX packets 452747  bytes 263958416 (263.9 MB)
+:         RX errors 0  dropped 0  overruns 0  frame 0
+:         TX packets 443010  bytes 316292648 (316.2 MB)
+:         TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+: 
+
+Or equivalently:
+
+#+begin_src sh :exports both :eval never-export :results verbatim
+ip address show wlp0s20f3
+#+end_src
+
+#+RESULTS:
+: 3: wlp0s20f3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP group default qlen 1000
+:     link/ether 38:ba:f8:2a:33:57 brd ff:ff:ff:ff:ff:ff
+:     inet 192.168.0.195/24 brd 192.168.0.255 scope global dynamic noprefixroute wlp0s20f3
+:        valid_lft 7114sec preferred_lft 7114sec
+:     inet6 fe80::443f:39ef:639a:de77/64 scope link noprefixroute 
+:        valid_lft forever preferred_lft forever
+
+#+begin_src sh :exports both :eval never-export :results verbatim
+route -n -6
+#+end_src
+
+#+RESULTS:
+#+begin_example
+Kernel IPv6 routing table
+Destination                    Next Hop                   Flag Met Ref Use If
+::1/128                        ::                         U    256 1     0 lo
+fe80::/64                      ::                         U    256 1     0 wlp0s20f3
+fe80::/64                      ::                         U    600 1     0 wlp0s20f3
+::/0                           ::                         !n   -1  1     0 lo
+::1/128                        ::                         Un   0   10     0 lo
+fe80::443f:39ef:639a:de77/128  ::                         Un   0   2     0 wlp0s20f3
+ff00::/8                       ::                         U    256 9     0 wlp0s20f3
+::/0                           ::                         !n   -1  1     0 lo
+#+end_example
+
+* IPv6 Network Address Translation
+
+- NAT was created to work around the shortage of IPv4 addresses,
+  letting a network administrator proxy lots of private addresses
+  through a small number of public addresses. This is not part of
+  IPv6.
+- IPv6 network hardware offers all of the advantesa of NAT without
+  lying to the network and breaking various applications.
+
+* Tunnels
+
+- Some organizations offers IPv6 *tunnels* allowing a network or
+  organization to get IPv6 connectivity over an IPv4 connection.
+- These let you test IPv6 in your enviroment before your ISP offers
+  it.
+- Problem: bandwidh constrained.
+
+* IPv4 versus IPv6
+
+- If a host uses both IPv6 and IPv6, incoming connection requests get
+  processed via the protocol that they arrive on. An IPv4 connection
+  request is answered in IPv4. IPv4 connection requests get IPv4
+  replies. Outgoing connections can use either IPv4 or IPv6 depending
+  on the operating system.
+- Some Linux variant, rely upon DNS to decide if they're going to use
+  IPv4 or IPv6. (If DNS returns IPv4, they use IPv4 and vice versa)
+- Some Linux versions use a program like *ip6addrctl* or a file like
+  */etc/gai.conf* to set IPv4 and IPv6 preferences.
