@@ -1,0 +1,52 @@
+* TCP/IP
+
+- TCP is a specific transport protocol that runs over IP but the name
+  *TCP/IP* referes to the whole family of protocols related to TCP and
+  IP: ICMP, UDP and TCP itself along with less common protocls like
+  SCTP etc.
+
+* ICMP
+
+- ICMP transimits availability, routing and status messages.
+- It's best know for tools like ping, traceroute. But it includes all
+  sorts of different messages.
+
+* UDP
+
+- UDP is the most minimal transport protocol availalbe in TCP/IP.
+- The protocol considers each UDP packet self-contained and while each
+  packet has its own checksum, the procol doesn't do anything to
+  verify a flow of data as an entity.
+- UDP is used for applications that do their own data flow error
+  management.
+- Example applications: VoIP, VPNs
+
+* TCP
+
+- The TCP includes much of the error connection that UDP lacks. The
+  receiver acknowledges every single packet it receives. The sender
+  retransmits any packet that isn't acknowledged. The packets have a
+  very specific order, and the OS verifies the integrity of the data
+  stream.
+- Host exchanging TCP data must setup a connection for the data to
+  flow across. One host request a connection. The destination host
+  either accepts, rejects or ignores the request. If the destination
+  accepts the request, it sends back information on how to
+  connect. When the first host acknowledes the receipt of that
+  information, it can start transmitting actual data. This setup
+  process is called the *three way handshake*. Similarly, once both
+  hosts finish with the connection they must go through a littlance
+  dance to tear it down, the *four-way handshake*.
+
+* Protocol rules and Troubleshooting
+
+** Logical Ports
+
+- TCP and UDP both use *logical ports* to multiplex connections
+  between machines, permitting one host to serve many different
+  services to many hots.
+- When a network service like a web server starts it attaches or
+  *binds* to one ore more logical ports.
+- A logical port is a number between 0 and 65535. TCP and UDP logical
+  ports are separate things, although they use the same range of port
+  numbers.
