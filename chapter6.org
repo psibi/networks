@@ -1,0 +1,217 @@
+* Viewing Network Connections
+
+- *netstat* program offers network statistics on both Windows and Unix
+  systems. It lets you see which ports a server has open, current
+  connection to other machines and sometimes what's listening on a
+  port.
+
+* Hostnames and Netstat
+
+- By default, netsat attempts to use hostnames instead of IP
+  addresses. This means your server perfroms a rever DNS lookup on
+  every IP address it exchanges traffic with.
+- It also uses service (/etc/services) file to give named port in it's
+  output.
+- Netstat allows you to disable DNS lookups and port name lookups with
+  the /-n/ flag which is recommended.
+
+* Netstat Display
+
+** Display headers
+
+#+begin_src sh :exports both :eval never-export :results verbatim
+netstat | head -n 3
+#+end_src
+
+#+RESULTS:
+: Active Internet connections (w/o servers)
+: Proto Recv-Q Send-Q Local Address           Foreign Address         State
+: tcp        0      0 arya:55348              172.65.251.78:https     ESTABLISHED
+
+- Proto: Shows if it involves TCP, UDP or some other protocol.
+- Recv-Q: The count of bytes not copied by the user program connected to this socket.
+- Send-Q: The count of bytes not acknowledged by the remote host.
+- Local Address: IP address on the local systems that this connection
+  or socket uses.
+- Foreign Address: Shows the IP address and port at the remote end of
+  the connection.
+- State: shows the condation of the TCP connection.
+
+The above command with /-n/ flag:
+
+#+begin_src sh :exports both :eval never-export :results verbatim
+netstat -n | head -n 3
+#+end_src
+
+#+RESULTS:
+: Active Internet connections (w/o servers)
+: Proto Recv-Q Send-Q Local Address           Foreign Address         State
+: tcp        0      0 192.168.0.181:55348     172.65.251.78:443       ESTABLISHED
+
+** Reading Netstat Entries
+
+Sample entry:
+
+#+begin_example
+TCP 0.0.0.0:135 0.0.0.0:0 LISTENING
+#+end_example
+
+- The local address 0.0.0.0 means "all IP addresses on this
+  machine". If you add new IP addresses to this hist, even without
+  rebooting this socket will be available to them.
+- The foreign address is 0.0.0.0 which means "any address". Similary
+  port 0 means "any port". The LISTENING state means that the software
+  is waiting for an incoming connection. This is an open, idle socket.
+- TIME_WAIT state indicats the connection is finished and being torn
+  down.
+
+Let's see another sample entry:
+
+#+begin_example
+UDP 0.0.0.0:100001 *:*
+#+end_example
+
+- *:* is UDP's way of saying "any IP, any port". Note that there is no
+  state for UDP, since UDP is connectionless.
+
+* Unix Netstat
+
+** Live ports
+
+Options:
+
+- *-a*: Show live connections
+- *-n*: Disable DNS lookup and port to name conversion
+- *-4*: Show IPv4 ports
+
+#+begin_src sh :exports both :eval never-export :results verbatim
+netstat -na -4 | head
+#+end_src
+
+#+RESULTS:
+#+begin_example
+Active Internet connections (servers and established)
+Proto Recv-Q Send-Q Local Address           Foreign Address         State
+tcp        0      0 127.0.0.53:53           0.0.0.0:*               LISTEN
+tcp        0      0 0.0.0.0:22              0.0.0.0:*               LISTEN
+tcp        0      0 127.0.0.1:8118          0.0.0.0:*               LISTEN
+tcp        0      0 127.0.0.1:631           0.0.0.0:*               LISTEN
+tcp        0      0 127.0.0.1:8123          0.0.0.0:*               LISTEN
+tcp        0      0 192.168.0.181:45324     34.120.177.193:443      ESTABLISHED
+tcp        0      0 192.168.0.181:55348     172.65.251.78:443       ESTABLISHED
+tcp        0      0 192.168.0.181:45322     34.120.177.193:443      ESTABLISHED
+#+end_example
+
+** Show only TCP or UDP
+
+- *-t* show only TCP connections
+- *-u* show only UDP connections
+
+#+begin_src sh :exports both :eval never-export :results verbatim
+netstat -na -u -4 | head
+#+end_src
+
+#+RESULTS:
+#+begin_example
+Active Internet connections (servers and established)
+Proto Recv-Q Send-Q Local Address           Foreign Address         State
+udp        0      0 127.0.0.53:53           0.0.0.0:*
+udp        0      0 0.0.0.0:68              0.0.0.0:*
+udp        0      0 0.0.0.0:631             0.0.0.0:*
+udp        0      0 0.0.0.0:54399           0.0.0.0:*
+udp        0      0 224.0.0.251:5353        0.0.0.0:*
+udp        0      0 224.0.0.251:5353        0.0.0.0:*
+udp        0      0 224.0.0.251:5353        0.0.0.0:*
+udp        0      0 224.0.0.251:5353        0.0.0.0:*
+#+end_example
+
+** Show Only Established connections
+
+#+begin_src sh :exports both :eval never-export :results verbatim
+netstat -t | head
+#+end_src
+
+#+RESULTS:
+#+begin_example
+Active Internet connections (w/o servers)
+Proto Recv-Q Send-Q Local Address           Foreign Address         State
+tcp        0      0 arya:45470              193.177.120.34.bc:https ESTABLISHED
+tcp        0      0 arya:54528              172.67.71.92:https      ESTABLISHED
+tcp        0      0 arya:44402              bom12s09-in-f14.1:https ESTABLISHED
+tcp        0      0 arya:46822              52.111.229.3:https      ESTABLISHED
+tcp        0      0 arya:55348              172.65.251.78:https     ESTABLISHED
+tcp        0      0 arya:46442              104.26.5.181:https      ESTABLISHED
+tcp        0      0 arya:57112              52.114.133.162:https    ESTABLISHED
+tcp        0      0 arya:44336              52.114.158.127:https    ESTABLISHED
+#+end_example
+
+** Show only Listening Sockets
+
+#+begin_src sh :exports both :eval never-export :results verbatim
+netstat -l | head
+#+end_src
+
+#+RESULTS:
+#+begin_example
+Active Internet connections (only servers)
+Proto Recv-Q Send-Q Local Address           Foreign Address         State
+tcp        0      0 localhost:domain        0.0.0.0:*               LISTEN
+tcp        0      0 0.0.0.0:ssh             0.0.0.0:*               LISTEN
+tcp        0      0 localhost:8118          0.0.0.0:*               LISTEN
+tcp        0      0 localhost:ipp           0.0.0.0:*               LISTEN
+tcp        0      0 localhost:8123          0.0.0.0:*               LISTEN
+tcp6       0      0 [::]:ssh                [::]:*                  LISTEN
+tcp6       0      0 ip6-localhost:3350      [::]:*                  LISTEN
+tcp6       0      0 ip6-localhost:8118      [::]:*                  LISTEN
+#+end_example
+
+** What's Listening on That Port ?
+
+- Finding this is useful for finding which process/daemon is listening
+  to that port.
+- You can use *-p* option in Linux for it.
+
+#+begin_src sh :exports both :eval never-export :results verbatim
+netstat -p -4 | head
+#+end_src
+
+#+RESULTS:
+#+begin_example
+Active Internet connections (w/o servers)
+Proto Recv-Q Send-Q Local Address           Foreign Address         State       PID/Program name
+tcp        0      0 arya:45470              193.177.120.34.bc:https ESTABLISHED 6187/chrome --type=
+tcp        0      0 arya:44402              bom12s09-in-f14.1:https ESTABLISHED 6187/chrome --type=
+tcp        0      0 arya:46822              52.111.229.3:https      ESTABLISHED 6187/chrome --type=
+tcp        0      0 arya:55348              172.65.251.78:https     ESTABLISHED 6187/chrome --type=
+tcp        0      0 arya:44336              52.114.158.127:https    ESTABLISHED 6187/chrome --type=
+tcp        0      0 arya:44128              text-lb.eqsin.wik:https ESTABLISHED 5267/emacs
+tcp        0      0 arya:55652              172.65.251.78:https     ESTABLISHED 6187/chrome --type=
+tcp        0      0 arya:33738              stackoverflow.com:https ESTABLISHED 6187/chrome --type=
+#+end_example
+
+* lsof
+
+- You can use *lsof*, if you operating system doesn't support *-p*
+  option.
+
+#+begin_src sh :exports both :eval never-export :results verbatim
+lsof -ni | head
+#+end_src
+
+#+RESULTS:
+#+begin_example
+COMMAND    PID USER   FD   TYPE DEVICE SIZE/OFF NODE NAME
+chrome    5203 sibi  162u  IPv4  66394      0t0  UDP 224.0.0.251:mdns
+.emacs-27 5267 sibi   19u  IPv4 107512      0t0  TCP 192.168.0.181:44158->103.102.166.224:https (ESTABLISHED)
+chrome    6187 sibi   31u  IPv4  98653      0t0  TCP 192.168.0.181:34450->74.125.68.188:5228 (ESTABLISHED)
+chrome    6187 sibi   36u  IPv4  74436      0t0  TCP 192.168.0.181:55340->172.65.251.78:https (ESTABLISHED)
+chrome    6187 sibi   37u  IPv4 106277      0t0  TCP 192.168.0.181:45500->34.120.177.193:https (ESTABLISHED)
+chrome    6187 sibi   42u  IPv4 102236      0t0  TCP 192.168.0.181:44960->52.114.142.204:https (ESTABLISHED)
+chrome    6187 sibi   45u  IPv4  64764      0t0  TCP 192.168.0.181:44336->52.114.158.127:https (ESTABLISHED)
+chrome    6187 sibi   49u  IPv4 107866      0t0  TCP 192.168.0.181:54604->172.67.71.92:https (ESTABLISHED)
+chrome    6187 sibi   50u  IPv4  73441      0t0  TCP 192.168.0.181:55348->172.65.251.78:https (ESTABLISHED)
+#+end_example
+
+- *-n* Disables DNS resolution
+- *-i* see all network ports in use, both listening and established
+  connection.
