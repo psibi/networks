@@ -1,0 +1,7 @@
+* Network Testing Basics
+
+- Contact your networking team for help with useful information.
+- Port scanner
+- Firewall might block traffic
+- Many router switches can perform packet filtering or use access
+  control lits (ACLs) to limit filtering.
