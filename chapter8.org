@@ -1,0 +1,94 @@
+* The Domain Name System
+
+- DNS provides a map between human friendly hostnames and IP
+  addresses.
+- DNS runs on TCP and UDP, using port 53 on both.
+
+* DNS Principles
+
+- DNS server is also known as nameserver.
+- A nameserver is a piece of software that search for and collects
+  address and hostname mappings.
+- When configuring a computer, give it the IP addresses of your
+  nameservers. If the host uses DHCP, it gets those addresses
+  automatically. If yo must set an IP address manually, uou'll need to
+  set DNS servers as well.
+
+** Domains and Zones
+
+- Domains like google.com are a specific type of DNS zone.
+- DNS is hierarchical. Each level within the hierarchy is a
+  zone. Every top level domain like .com and .net is a
+  zone. google.com is also a zone. mail.google.com is also a zone.
+- All of the top level domains - .com, . net are contained in the all
+  encompassing root zone.
+- A zone inside another zone is called a child zone.
+- A zone that holds other zones is a parent zone.
+- A complete collection of data for a zone is called a zone file. Zone
+  files live on the authoritative DNS servers.
+
+** Authoritative and Recursive DNS
+
+- Authoritative nameservers contain the information for specific
+  domains. Eg: The domain I own for psibi.in is from an authoritative
+  server.
+- Resursive nameservers provide DNS lookups for clients. The recursive
+  nameserver finds the authoritative nameserver for the destination
+  site, queries it and returns the answer.
+
+** DNS Hierarchy
+
+- The nameserver conults its list of root name servers, picks one and
+  asks it for information.
+- This goes on till you get the result.
+
+** Forward and Reverse DNS
+
+- Forward DNS maps hostnames to IP addresses. The client requests the
+  IP for google.com and gets an answer like 20.3.3.3.
+- Reverse DNS maps IP addresses to hostnames.
+
+** DNS record types
+
+- A (address) record: contains an IPv4 address.
+- AAAA record: contains an IPv6 addresses.
+- PTR record: contains a hostname. Used mostly for Reverse DNS. But
+  also used in other protocols like ZeroConf and Service Discovery.
+- SOA record: (Start of Authority) record gives timing and
+  responsibility information for the zone you're searching. Eg: cache
+  time.
+- CNAME: (canonical name) is a DNS alias.
+- MX (Mail exchanger) record: identifies one of the mail servers for a
+  zone.
+
+** DNS Caching
+
+- Recursive DNS servers cache collected answers until a pre-DNS record
+  timer expires.
+- Once the answer expires, the recursive DNS server throws the data
+  away.
+
+* Running DNS Queries
+
+- Windows: nslookup
+- Unix: host, also might include nslookup
+
+** DNS Response codes
+
+These are the most common ones:
+
+- NOERROR: means everything worked correctly.
+- NXDOMAIN: means the DNS protocol worker but that the DNS doesn't
+  contain any records of the name you're looking for.
+- SERVFAIL: means something went wrong.
+
+Demo:
+
+#+begin_src sh :exports both :eval never-export :results verbatim
+host wwww.psibi.in
+echo
+#+end_src
+
+#+RESULTS:
+: Host wwww.psibi.in not found: 3(NXDOMAIN)
+:
