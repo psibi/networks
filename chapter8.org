@@ -1,3 +1,28 @@
+* TOC
+  :PROPERTIES:
+  :TOC:      :include all
+  :END:
+
+:CONTENTS:
+- [[#toc][TOC]]
+- [[#the-domain-name-system][The Domain Name System]]
+- [[#dns-principles][DNS Principles]]
+  - [[#domains-and-zones][Domains and Zones]]
+  - [[#authoritative-and-recursive-dns][Authoritative and Recursive DNS]]
+  - [[#dns-hierarchy][DNS Hierarchy]]
+  - [[#forward-and-reverse-dns][Forward and Reverse DNS]]
+  - [[#dns-record-types][DNS record types]]
+  - [[#dns-caching][DNS Caching]]
+- [[#running-dns-queries][Running DNS Queries]]
+  - [[#dns-response-codes][DNS Response codes]]
+  - [[#windows-and-nslookup][Windows and nslookup]]
+  - [[#unix-and-host][Unix and host]]
+  - [[#advanced-dns-queries][Advanced DNS Queries]]
+- [[#the-hosts-file][The Hosts File]]
+  - [[#name-resolution-orders][Name Resolution Orders]]
+  - [[#disabling-dns][Disabling DNS]]
+:END:
+
 * The Domain Name System
 
 - DNS provides a map between human friendly hostnames and IP
