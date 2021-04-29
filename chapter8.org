@@ -92,3 +92,223 @@ echo
 #+RESULTS:
 : Host wwww.psibi.in not found: 3(NXDOMAIN)
 :
+
+** Windows and nslookup
+
+Although, the book section covers Windows - we will use Linux.
+
+#+begin_src sh :exports both :eval never-export :results verbatim
+nslookup www.psibi.in
+#+end_src
+
+#+RESULTS:
+#+begin_example
+Server:		127.0.0.53
+Address:	127.0.0.53#53
+
+Non-authoritative answer:
+www.psibi.in	canonical name = psibi.github.io.
+Name:	psibi.github.io
+Address: 185.199.111.153
+Name:	psibi.github.io
+Address: 185.199.110.153
+Name:	psibi.github.io
+Address: 185.199.109.153
+Name:	psibi.github.io
+Address: 185.199.108.153
+
+#+end_example
+
+From the above result, it seems to be using local DNS server
+127.0.0.53. Okay, let's inspect what's running there:
+
+#+begin_src sh :exports both :eval never-export :results verbatim
+nmap 127.0.0.53
+#+end_src
+
+#+RESULTS:
+#+begin_example
+
+Starting Nmap 7.60 ( https://nmap.org ) at 2021-04-29 12:40 IST
+Nmap scan report for localhost (127.0.0.53)
+Host is up (0.00013s latency).
+Not shown: 997 closed ports
+PORT     STATE SERVICE
+22/tcp   open  ssh
+53/tcp   open  domain
+3389/tcp open  ms-wbt-server
+
+Nmap done: 1 IP address (1 host up) scanned in 0.06 seconds
+#+end_example
+
+Seems three port are open and as we know from earlier the port 53 is
+where DNS usually runs.
+
+Let's do reveres DNS queries:
+
+#+begin_src sh :exports both :eval never-export :results verbatim
+nslookup 185.199.108.153
+#+end_src
+
+#+RESULTS:
+: 153.108.199.185.in-addr.arpa	name = cdn-185-199-108-153.github.com.
+:
+: Authoritative answers can be found from:
+:
+
+You can also explicitly pass public nameserver:
+
+#+begin_src sh :exports both :eval never-export :results verbatim
+nslookup psibi.in 8.8.8.8
+#+end_src
+
+#+RESULTS:
+#+begin_example
+Server:		8.8.8.8
+Address:	8.8.8.8#53
+
+Non-authoritative answer:
+Name:	psibi.in
+Address: 185.199.111.153
+Name:	psibi.in
+Address: 185.199.108.153
+Name:	psibi.in
+Address: 185.199.109.153
+Name:	psibi.in
+Address: 185.199.110.153
+
+#+end_example
+
+** Unix and host
+
+#+begin_src sh :exports both :eval never-export :results verbatim
+host www.psibi.in
+#+end_src
+
+#+RESULTS:
+: www.psibi.in is an alias for psibi.github.io.
+: psibi.github.io has address 185.199.111.153
+: psibi.github.io has address 185.199.110.153
+: psibi.github.io has address 185.199.109.153
+: psibi.github.io has address 185.199.108.153
+
+For a more detailed output,
+
+#+begin_src sh :exports both :eval never-export :results verbatim
+host -v www.psibi.in
+#+end_src
+
+#+RESULTS:
+#+begin_example
+Trying "www.psibi.in"
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 14568
+;; flags: qr rd ra; QUERY: 1, ANSWER: 5, AUTHORITY: 0, ADDITIONAL: 0
+
+;; QUESTION SECTION:
+;www.psibi.in.			IN	A
+
+;; ANSWER SECTION:
+www.psibi.in.		7180	IN	CNAME	psibi.github.io.
+psibi.github.io.	3580	IN	A	185.199.111.153
+psibi.github.io.	3580	IN	A	185.199.110.153
+psibi.github.io.	3580	IN	A	185.199.109.153
+psibi.github.io.	3580	IN	A	185.199.108.153
+
+Received 123 bytes from 127.0.0.53#53 in 0 ms
+Trying "psibi.github.io"
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 61740
+;; flags: qr rd ra; QUERY: 1, ANSWER: 0, AUTHORITY: 0, ADDITIONAL: 0
+
+;; QUESTION SECTION:
+;psibi.github.io.		IN	AAAA
+
+Received 33 bytes from 127.0.0.53#53 in 0 ms
+Trying "psibi.github.io"
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 34826
+;; flags: qr rd ra; QUERY: 1, ANSWER: 0, AUTHORITY: 0, ADDITIONAL: 0
+
+;; QUESTION SECTION:
+;psibi.github.io.		IN	MX
+
+Received 33 bytes from 127.0.0.53#53 in 0 ms
+#+end_example
+
+- NOERROR indicates the DNS protocol worked.
+- QUESTION section indicates the host specifically requested an A
+  record. (You can also see that id did for AAAA and MX record too)
+- Under ANSWER, the nameserver answered with an IP address.
+- At the end we see the IP address of the nameserver host was queried
+  and how much traffic was received.
+
+Now let's perform reverse DNS:
+
+#+begin_src sh :exports both :eval never-export :results verbatim
+host 185.199.111.153
+#+end_src
+
+#+RESULTS:
+: 153.111.199.185.in-addr.arpa domain name pointer cdn-185-199-111-153.github.com.
+
+Let's use a specific DNS nameserver:
+
+#+begin_src sh :exports both :eval never-export :results verbatim
+host www.psibi.in 8.8.8.8
+#+end_src
+
+#+RESULTS:
+#+begin_example
+Using domain server:
+Name: 8.8.8.8
+Address: 8.8.8.8#53
+Aliases:
+
+www.psibi.in is an alias for psibi.github.io.
+psibi.github.io has address 185.199.110.153
+psibi.github.io has address 185.199.108.153
+psibi.github.io has address 185.199.109.153
+psibi.github.io has address 185.199.111.153
+#+end_example
+
+** Advanced DNS Queries
+
+Two most popular DNS toolkits:
+- BIND (Berkley Interna Name Daemon)
+- Unbound
+
+Bind icnludes the advanced query tool *dig*. Unbound's advanced tool
+is called *unbound-host*.
+
+* The Hosts File
+
+- You can manually create an hostname to IP mappings on an individual
+  machine by using the hosts file.
+- Unix uses the /etc/hosts file
+- Windows ues C:\\Windows\System32\drivers\etc\hosts
+
+Both have the same format:
+
+#+begin_example
+ipaddress hostname aliases
+#+end_example
+
+Example:
+
+#+begin_example
+23.4.32.1 www.example.com
+29.12.32.1 www.foo.com foo1 foo2
+#+end_example
+
+** Name Resolution Orders
+
+- Depends on various sources: DNS, the hosts file, possibly even LDAP
+  or other local databases.
+- Operating systems lets you control the order.
+- Most Unix systems use /etc/nsswitch.conf and or /etc/host.conf to
+  control which information source is checked first.
+
+** Disabling DNS
+
+- Most of the tools performs reverse DNS lookups to find out the IP
+  adddress.
+- You can try disabling any DNS dependency if you services behaves
+  badly and you want to debug things.
