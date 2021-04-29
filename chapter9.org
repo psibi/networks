@@ -1,0 +1,370 @@
+* Packet Sniffing
+
+* TOC
+  :PROPERTIES:
+  :TOC:      :include all :depth 3
+  :END:
+
+:CONTENTS:
+- [[#packet-sniffing][Packet Sniffing]]
+- [[#toc][TOC]]
+- [[#packet-sniffers][Packet Sniffers]]
+  - [[#tcpdump][tcpdump]]
+  - [[#wireshark][Wireshark]]
+  - [[#packet-sniffer-security][Packet Sniffer Security]]
+  - [[#packet-sniffer-interfaces][Packet Sniffer Interfaces]]
+  - [[#encryption-and-packet-sniffers][Encryption and Packet Sniffers]]
+- [[#using-tcpdump][Using tcpdump]]
+  - [[#identifying-interfaces][Identifying Interfaces]]
+  - [[#your-first-tcpdump][Your First tcpdump]]
+  - [[#reading-udp-packets][Reading UDP Packets]]
+  - [[#reading-tcp-packets][Reading TCP Packets]]
+- [[#filtering-captuers][Filtering Captuers]]
+  - [[#filter-format][Filter Format]]
+  - [[#capturing-arp-traffic][Capturing ARP traffic]]
+  - [[#filtering-by-ip-addresses][Filtering by IP Addresses]]
+  - [[#capturing-by-tcp-and-udp-ports][Capturing by TCP and UDP Ports]]
+- [[#capture-files][Capture Files]]
+  - [[#capturing-to-a-file][Capturing to a File]]
+  - [[#reading-a-capture-file][Reading a Capture File]]
+:END:
+
+- A packet sniffer displays packets as they cross a network interface.
+- The sniffer can capture and display everything that arrives from the
+  network adn everything that leaves the server.
+- Packet sniffers have sophiticated fileters that let you select
+  exactly what traffic you capture and display, so you can narrow in
+  on what you're looking for.
+
+* Packet Sniffers
+
+- Solaris: snoop
+- Microsoft: Network Analyzer
+- Unix: tcpdump and Wireshark
+
+** tcpdump
+
+- Available for almost all the OS
+- The filtering language created for tcpdump, Berkeley Packet Filter
+  (BPF) syntax has become a standard part of networking.
+- Almost every packet sniffer supports tcpdump style BPF expressions,
+  so tcpdump education is portable.
+- Port of tcpdump for Windows: WinDump. It requires WinPcap library
+  and drivers.
+- One popular use of tcpdump is to capture traffic to a file for
+  analysis on a different machine.
+
+** Wireshark
+
+- Much largeer than tcpdump
+- It's a traffic analysis tool
+- Should never go into production
+
+** Packet Sniffer Security
+
+- All packet sniffers attach to a network interface at a low level. So
+  they need administrative privileges to run.
+- Modern operating systems run tcpdump in a sandbox to prevent
+  security issues.
+
+** Packet Sniffer Interfaces
+
+- When you run a packet sniffer, you must decide which interface to
+  sniff on, or attach.
+- Many systems have only one physical network interface, but you might
+  have multiple virtual interfaces and tunnels, not to mention the
+  loopback interface.
+
+** Encryption and Packet Sniffers
+
+- A packet sniffer can trivially capture usernames and passwords from
+  unencrypted traffic.
+
+* Using tcpdump
+
+** Identifying Interfaces
+
+#+begin_src sh :exports both :eval never-export :results verbatim
+tcpdump -D | head -n 3
+#+end_src
+
+#+RESULTS:
+: 1.wlp0s20f3 [Up, Running]
+: 2.any (Pseudo-device that captures on all interfaces) [Up, Running]
+: 3.lo [Up, Running, Loopback]
+
+#+begin_example
+tcpdump -i wlp0s20f3
+#+end_example
+
+** Your First tcpdump
+
+Run tcpdump on your main interface:
+
+#+begin_example
+$ tcpdump -i 1
+tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
+listening on wlp0s20f3, link-type EN10MB (Ethernet), capture size 262144 bytes
+18:33:47.891764 IP arya.48304 > 172.65.251.78.https: Flags [P.], seq 57446509:57446625, ack 4210541848, win 9953, length 116
+18:33:47.892784 IP arya.47730 > _gateway.domain: 52540+ [1au] PTR? 195.0.168.192.in-addr.arpa. (55)
+18:33:47.895675 IP 172.65.251.78.https > arya.48304: Flags [.], ack 116, win 1229, length 0
+18:33:47.898092 IP _gateway.domain > arya.47730: 52540 NXDomain 0/0/1 (55)
+18:33:47.898224 IP arya.47730 > _gateway.domain: 52540+ PTR? 195.0.168.192.in-addr.arpa. (44)
+18:33:47.901353 IP _gateway.domain > arya.47730: 52540 NXDomain 0/0/0 (44)
+18:33:47.901915 IP arya.43741 > _gateway.domain: 33446+ [1au] PTR? 1.0.168.192.in-addr.arpa. (53)
+18:33:47.906881 IP _gateway.domain > arya.43741: 33446 NXDomain 0/0/1 (53)
+^C
+8 packets captured
+10 packets received by filter
+2 packets dropped by kernel
+#+end_example
+
+** Reading UDP Packets
+
+#+begin_example
+18:33:47.906881 IP _gateway.domain > arya.43741: 33446 NXDomain 0/0/1 (53)
+#+end_example
+
+- First field is a timestamp at 47.906881 seconds.
+- Second field IP shows that this is an IP packet. You'll see other
+  protocols here like IP6, 802.1 etc.
+- Third field is the IP address or hostname that is the source of the
+  packet. The packet came from the _gateway.domain.
+- The arrow indicates that this packet is moving on to another host.
+- The destination host is arya on port 43741. (which is my localhost)
+
+If tcpdump understands the packet, it prints the packet contents at
+the end. It seems in my case it's something lelated to DNS query.
+
+You can run *tcpdump* by disabling DNS queries using the /-n/ option.
+
+** Reading TCP Packets
+
+*** TCP flags in tcpdump
+
+#+begin_example
+18:33:47.895675 IP 172.65.251.78.https > arya.48304: Flags [.], ack 116, win 1229, length 0
+#+end_example
+
+- The presence of a *Flags* value in the line tells you that this is a
+  TCP packet. It shows the state of a connection. The flags are:
+  - S: means SYN packet.
+  - .: period is an ACK or an acknowledgement.
+  - R: TCP reset.
+  - F: FIN packet.
+
+* Filtering Captuers
+
+** Filter Format
+
+- Tcpdump filters uses keywords and variables.
+- Logical operators: and, not, or and parenthesis.
+
+Syntax:
+
+#+begin_example
+tcpdump -n -i interface filter-expressions
+#+end_example
+
+** Capturing ARP traffic
+
+Motivation: You suspect duplicate IP on the network.
+
+#+begin_example
+$ tcpdump -ni 1 arp
+tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
+listening on wlp0s20f3, link-type EN10MB (Ethernet), capture size 262144 bytes
+19:39:38.996788 ARP, Request who-has 192.168.0.129 tell 192.168.0.1, length 28
+19:39:39.508566 ARP, Request who-has 192.168.0.158 tell 192.168.0.158, length 28
+19:39:39.918402 ARP, Request who-has 192.168.0.129 tell 192.168.0.1, length 28
+19:39:40.943295 ARP, Request who-has 192.168.0.129 tell 192.168.0.1, length 28
+19:39:41.966244 ARP, Request who-has 192.168.0.129 tell 192.168.0.1, length 28
+^C
+5 packets captured
+5 packets received by filter
+0 packets dropped by kernel
+#+end_example
+
+You can also filter by hardware address. Use the *ether host* keyword
+and a MAC address:
+
+#+begin_example
+$ tcpdump -ni 1 ether host XX:ba:f8:2a:XX:XX
+tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
+listening on wlp0s20f3, link-type EN10MB (Ethernet), capture size 262144 bytes
+19:41:06.892628 IP 192.168.0.195.35376 > 52.114.142.211.443: Flags [P.], seq 1584898387:1584900333, ack 91823464, win 501, length 1946
+19:41:06.895796 IP 192.168.0.195.35376 > 52.114.142.211.443: Flags [P.], seq 1946:2100, ack 1, win 501, length 154
+19:41:07.166057 IP 52.114.142.211.443 > 192.168.0.195.35376: Flags [.], ack 0, win 2052, options [nop,nop,sack 1 {1440:1946}], length 0
+19:41:07.166064 IP 52.114.142.211.443 > 192.168.0.195.35376: Flags [.], ack 1946, win 2053, length 0
+19:41:07.166065 IP 52.114.142.211.443 > 192.168.0.195.35376: Flags [P.], seq 1:47, ack 2100, win 2052, length 46
+19:41:07.166066 IP 52.114.142.211.443 > 192.168.0.195.35376: Flags [P.], seq 47:89, ack 2100, win 2052, length 42
+19:41:07.166112 IP 192.168.0.195.35376 > 52.114.142.211.443: Flags [.], ack 47, win 501, length 0
+19:41:07.166131 IP 192.168.0.195.35376 > 52.114.142.211.443: Flags [.], ack 89, win 501, length 0
+19:41:07.167343 IP 52.114.142.211.443 > 192.168.0.195.35376: Flags [P.], seq 89:194, ack 2100, win 2052, length 105
+19:41:07.167361 IP 192.168.0.195.35376 > 52.114.142.211.443: Flags [.], ack 194, win 501, length 0
+^C
+10 packets captured
+10 packets received by filter
+0 packets dropped by kernel
+#+end_example
+
+The above MAC address is my host. (You can get it from ip addr command)
+
+Filter on your hardware only for ARP traffic:
+
+#+begin_example
+$ tcpdump -ni 1 arp and ether host XX:ba:f8:2a:XX:XX
+#+end_example
+
+** Filtering by IP Addresses
+
+To get only IP traffic:
+
+#+begin_example
+tcpdump -ni 1 ip
+#+end_example
+
+To filter via IP address:
+
+#+begin_example
+$ tcpdump -ni 1 ip host www.psibi.in
+tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
+listening on wlp0s20f3, link-type EN10MB (Ethernet), capture size 262144 bytes
+19:46:12.027812 IP 192.168.0.195.51200 > 185.199.110.153.80: Flags [F.], seq 3597200184, ack 1001549143, win 502, options [nop,nop,TS val 1872389601 ecr 374275721], length 0
+19:46:12.028708 IP 192.168.0.195.38082 > 185.199.110.153.443: Flags [P.], seq 416478716:416478787, ack 597250241, win 501, options [nop,nop,TS val 1872389602 ecr 1560534943], length 71
+19:46:12.029874 IP 192.168.0.195.38082 > 185.199.110.153.443: Flags [P.], seq 71:110, ack 1, win 501, options [nop,nop,TS val 1872389604 ecr 1560534943], length 39
+19:46:12.068761 IP 185.199.110.153.443 > 192.168.0.195.38082: Flags [.], ack 71, win 137, options [nop,nop,TS val 1560547157 ecr 1872389602], length 0
+19:46:12.068770 IP 185.199.110.153.443 > 192.168.0.195.38082: Flags [.], ack 110, win 137, options [nop,nop,TS val 1560547157 ecr 1872389604], length 0
+19:46:12.068771 IP 185.199.110.153.443 > 192.168.0.195.38082: Flags [P.], seq 1:40, ack 110, win 137, options [nop,nop,TS val 1560547157 ecr 1872389604], length 39
+19:46:12.068772 IP 185.199.110.153.443 > 192.168.0.195.38082: Flags [P.], seq 40:179, ack 110, win 137, options [nop,nop,TS val 1560547157 ecr 1872389604], length 139
+19:46:12.068802 IP 192.168.0.195.38082 > 185.199.110.153.443: Flags [.], ack 40, win 501, options [nop,nop,TS val 1872389642 ecr 1560547157], length 0
+19:46:12.068830 IP 192.168.0.195.38082 > 185.199.110.153.443: Flags [.], ack 179, win 500, options [nop,nop,TS val 1872389643 ecr 1560547157], length 0
+19:46:12.069348 IP 192.168.0.195.38082 > 185.199.110.153.443: Flags [P.], seq 110:145, ack 179, win 501, options [nop,nop,TS val 1872389643 ecr 1560547157], length 35
+19:46:12.072862 IP 185.199.110.153.80 > 192.168.0.195.51200: Flags [F.], seq 1, ack 1, win 128, options [nop,nop,TS val 374289552 ecr 1872389601], length 0
+19:46:12.072910 IP 192.168.0.195.51200 > 185.199.110.153.80: Flags [.], ack 2, win 502, options [nop,nop,TS val 1872389647 ecr 374289552], length 0
+19:46:12.153624 IP 185.199.110.153.443 > 192.168.0.195.38082: Flags [.], ack 145, win 137, options [nop,nop,TS val 1560547242 ecr 1872389643], length 0
+^C
+13 packets captured
+13 packets received by filter
+0 packets dropped by kernel
+#+end_example
+
+Mutliple IP address:
+
+#+begin_example
+$ tcpdump -ni 1 ip host www.psibi.in or www.google.com
+#+end_example
+
+Parenthesis are slightly complicate because you have to escape
+them. Example:
+
+#+begin_example
+$ tcpdump -ni 1 ip host www.psibi.in and \(ip host www.google.com or 192.168.0.195\)
+#+end_example
+
+Traffic between your host and an entire network:
+
+#+begin_example
+$ tcpdump -ni 1 ip net 192.0.2.0/24
+#+end_example
+
+** Capturing by TCP and UDP Ports
+
+Capturing only UDP traffic:
+
+#+begin_example
+$ tcpdump -ni 1 udp
+#+end_example
+
+To focus on a specific port:
+
+#+begin_example
+$ tcpdump -ni 1 udp port 53
+tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
+listening on wlp0s20f3, link-type EN10MB (Ethernet), capture size 262144 bytes
+19:58:42.905888 IP 192.168.0.195.55418 > 192.168.0.1.53: 17291+ [1au] A? web.whatsapp.com. (45)
+19:58:42.909177 IP 192.168.0.1.53 > 192.168.0.195.55418: 17291 2/0/1 CNAME mmx-ds.cdn.whatsapp.net., A 157.240.228.60 (98)
+19:58:56.014486 IP 192.168.0.195.58784 > 192.168.0.1.53: 11977+ [1au] PTR? 153.111.199.185.in-addr.arpa. (57)
+19:58:56.740804 IP 192.168.0.1.53 > 192.168.0.195.58784: 11977 1/0/1 PTR cdn-185-199-111-153.github.com. (101)
+
+^C
+4 packets captured
+4 packets received by filter
+0 packets dropped by kernel
+#+end_example
+
+Different ports:
+
+#+begin_example
+$ tcpdump -ni 1 tcp and \(port 53 or 22\)
+#+end_example
+
+* Capture Files
+
+- Tcpdump can copy all the packets it captures to a file.
+- It's a binary dump of the actual packets.
+- You can read a capture file with tcpdump, another packet sniffer or
+  sent it to an expert.
+- Capture files can contain sensitive information. Any authentication
+  information that's sent unecrypted will appear in plain text inside
+  the capture file.
+
+** Capturing to a File
+
+- Specify a cpature file with /-w/ and the filename.
+- Traditionally, a capture files end in *.pcap*
+
+#+begin_example
+$ tcpdump -w dns.pcap -ni 1 udp port 53
+tcpdump: listening on wlp0s20f3, link-type EN10MB (Ethernet), capture size 262144 bytes
+^C10 packets captured
+10 packets received by filter
+0 packets dropped by kernel
+#+end_example
+
+You can check the file:
+
+#+begin_example
+$ ls -lh dns.pcap
+-rw-r--r-- 1 root root 1.5K Apr 29 20:05 dns.pcap
+#+end_example
+
+** Reading a Capture File
+
+Using tcpdump:
+
+#+begin_example
+$ tcpdump -r dns.pcap
+reading from file dns.pcap, link-type EN10MB (Ethernet)
+20:05:34.897189 IP arya.59285 > _gateway.domain: 53487+ [1au] A? noam.presence.services.sfb.trafficmanager.net. (74)
+20:05:34.902096 IP _gateway.domain > arya.59285: 53487 2/0/1 CNAME a-ups-presence1-prod-azsc.westus2.cloudapp.azure.com., A 52.112.115.22 (156)
+20:05:37.180614 IP arya.45900 > _gateway.domain: 54011+ [1au] A? www.github.com. (43)
+20:05:37.180763 IP arya.54048 > _gateway.domain: 61672+ [1au] AAAA? www.github.com. (43)
+20:05:37.186606 IP _gateway.domain > arya.45900: 54011 2/0/1 CNAME github.com., A 13.234.210.38 (73)
+20:05:37.186606 IP _gateway.domain > arya.54048: 61672 1/1/1 CNAME github.com. (141)
+20:05:37.187169 IP arya.39416 > _gateway.domain: 50300+ [1au] AAAA? github.com. (39)
+20:05:37.189966 IP _gateway.domain > arya.39416: 50300 0/1/1 (123)
+20:05:37.220956 IP arya.36637 > _gateway.domain: 3039+ [1au] PTR? 38.210.234.13.in-addr.arpa. (55)
+20:05:37.807198 IP _gateway.domain > arya.36637: 3039 1/0/1 PTR ec2-13-234-210-38.ap-south-1.compute.amazonaws.com. (119)
+#+end_example
+
+By disabling DNS lookup:
+
+#+begin_example
+$ tcpdump -nr dns.pcap
+reading from file dns.pcap, link-type EN10MB (Ethernet)
+20:05:34.897189 IP 192.168.0.195.59285 > 192.168.0.1.53: 53487+ [1au] A? noam.presence.services.sfb.trafficmanager.net. (74)
+20:05:34.902096 IP 192.168.0.1.53 > 192.168.0.195.59285: 53487 2/0/1 CNAME a-ups-presence1-prod-azsc.westus2.cloudapp.azure.com., A 52.112.115.22 (156)
+20:05:37.180614 IP 192.168.0.195.45900 > 192.168.0.1.53: 54011+ [1au] A? www.github.com. (43)
+20:05:37.180763 IP 192.168.0.195.54048 > 192.168.0.1.53: 61672+ [1au] AAAA? www.github.com. (43)
+20:05:37.186606 IP 192.168.0.1.53 > 192.168.0.195.45900: 54011 2/0/1 CNAME github.com., A 13.234.210.38 (73)
+20:05:37.186606 IP 192.168.0.1.53 > 192.168.0.195.54048: 61672 1/1/1 CNAME github.com. (141)
+20:05:37.187169 IP 192.168.0.195.39416 > 192.168.0.1.53: 50300+ [1au] AAAA? github.com. (39)
+20:05:37.189966 IP 192.168.0.1.53 > 192.168.0.195.39416: 50300 0/1/1 (123)
+20:05:37.220956 IP 192.168.0.195.36637 > 192.168.0.1.53: 3039+ [1au] PTR? 38.210.234.13.in-addr.arpa. (55)
+20:05:37.807198 IP 192.168.0.1.53 > 192.168.0.195.36637: 3039 1/0/1 PTR ec2-13-234-210-38.ap-south-1.compute.amazonaws.com. (119)
+#+end_example
+
+You can filter it find by the logical operators and can perform other
+operations on the captured file. You can also use Wireshark to do the
+analysis.
