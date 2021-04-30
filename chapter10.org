@@ -1,0 +1,166 @@
+* Creating Traffic
+
+* TOC
+  :PROPERTIES:
+  :TOC:      :include all
+  :END:
+
+:CONTENTS:
+- [[#creating-traffic][Creating Traffic]]
+- [[#toc][TOC]]
+- [[#netcat-and-security][Netcat and Security]]
+  - [[#which-netcat][Which Netcat]]
+- [[#connecting-with-netcat][Connecting with Netcat]]
+  - [[#connecting-with-tcp][Connecting with TCP]]
+  - [[#connecting-with-udp][Connecting with UDP]]
+  - [[#netcat-errors][Netcat Errors]]
+- [[#listening-with-netcat][Listening with Netcat]]
+  - [[#tcp-listeners][TCP listeners]]
+  - [[#udp-listeners][UDP listeners]]
+- [[#sending-files-with-netcat][Sending Files with Netcat]]
+- [[#more-netcat-fun][More Netcat Fun]]
+:END:
+
+- *netcat* lets you generate arbitrary TCP/IP traffic.
+- *Netcat* can also create arbitrary sockets and report on the data
+  that arrives at them.
+
+* Netcat and Security
+
+- Netcat is sensitive to your organization's security policy. So be
+  careful before using it.
+
+** Which Netcat
+
+- Came out in 1995
+- Comes with various variants. Some versions don't support IPv6.
+- Alternative: socat and Nmap's ncat
+
+* Connecting with Netcat
+
+- Most common usage is to connect to a TCP or UDP port.
+
+** Connecting with TCP
+
+- Netcat defaults to using TCP.
+- Add /-v/ option to display errors.
+
+You can get a establish a TCP connection and get a prompt:
+
+#+begin_example
+$ nc -v www.psibi.in 80
+Connection to www.psibi.in 80 port [tcp/http] succeeded!
+^C
+#+end_example
+
+You can send HTTP request by hand:
+
+#+begin_example
+$ nc -v www.psibi.in 80
+Connection to www.psibi.in 80 port [tcp/http] succeeded!
+GET / HTTP/1.1
+host: www.psibi.in
+
+HTTP/1.1 301 Moved Permanently
+Server: GitHub.com
+Content-Type: text/html
+Location: https://psibi.in/
+X-GitHub-Request-Id: 23F2:415B:95D2D9:A04472:608ACE86
+Content-Length: 162
+Accept-Ranges: bytes
+Date: Thu, 29 Apr 2021 15:19:35 GMT
+Via: 1.1 varnish
+Age: 0
+Connection: keep-alive
+X-Served-By: cache-bom4724-BOM
+X-Cache: MISS
+X-Cache-Hits: 0
+X-Timer: S1619709575.929142,VS0,VE279
+Vary: Accept-Encoding
+X-Fastly-Request-ID: 804de28d7181074863d2f1903d1e28411adda42c
+
+<html>
+<head><title>301 Moved Permanently</title></head>
+<body>
+<center><h1>301 Moved Permanently</h1></center>
+<hr><center>nginx</center>
+</body>
+</html>
+#+end_example
+
+Note that I crafted these:
+
+#+begin_example
+GET / HTTP/1.1
+host: www.psibi.in
+#+end_example
+
+And I hit ENTER twice after that as per the HTTP protocol
+specification.
+
+** Connecting with UDP
+
+- To create UDP connection, use the /-u/ flag.
+
+Sample session on Google's nameservers:
+
+#+begin_example
+$ nc -uv 8.8.8.8 53
+Connection to 8.8.8.8 53 port [udp/domain] succeeded!
+#+end_example
+
+** Netcat Errors
+
+- Add /-v/ option to see the errors.
+
+* Listening with Netcat
+
+- You can use tcpdump to see traffic arrive at a host.
+- Netcat can act as a mini-server letting you create netcat listeners
+  on arbitrary TCP/IP ports.
+
+** TCP listeners
+
+- Use the /-l/ flag to tell netcat to listen. Netcap uses TCP by
+  default.
+- Use netcat listener on one host and use netcan on another to send
+  data. Eg:
+
+#+begin_example
+nc -l 9999
+#+end_example
+
+And on another terminal:
+
+#+begin_example
+nc 127.0.0.1 9999
+#+end_example
+
+Then you can send data to the another session.
+
+** UDP listeners
+
+Similar flow like above thing can be done, but you need to use /-u/
+option.
+
+* Sending Files with Netcat
+
+#+begin_example
+$ nc -l 9999 > received_file
+#+end_example
+
+Now you need to send the file:
+
+#+begin_example
+$ nc -q 0 203.0.113.205 9999 < testfile
+#+end_example
+
+The /-q 0/ option tells netcat client to close after it finishes the
+file.
+
+* More Netcat Fun
+
+You can do lots of things using Netcat:
+- Attach shell
+- Send files to a decomprssion program
+- Capture UDP queries

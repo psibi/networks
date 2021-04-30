@@ -1,0 +1,160 @@
+* Tracing Problems
+
+* TOC
+  :PROPERTIES:
+  :TOC:      :include all :depth 3
+  :END:
+
+:CONTENTS:
+- [[#tracing-problems][Tracing Problems]]
+- [[#toc][TOC]]
+- [[#our-first-traceroute][Our First Traceroute]]
+- [[#traceroute-errors][Traceroute Errors]]
+  - [[#slow-traces][Slow Traces]]
+  - [[#starring-out][starring out]]
+  - [[#time-spikes][Time Spikes]]
+  - [[#time-jumps][Time Jumps]]
+  - [[#multiple-hosts-at-one-hop][Multiple Hosts at One Hop]]
+  - [[#errors][!Errors]]
+- [[#identitying-address-and-domain-owners][Identitying Address and Domain Owners]]
+- [[#asymmetric-routing-and-traceroute-servers][Asymmetric Routing and Traceroute Servers]]
+- [[#ongoing-traceroute-mtr][Ongoing Traceroute: mtr]]
+- [[#how-should-you-use-traceroute-][How Should You Use Traceroute ?]]
+:END:
+
+
+- Packets wend their way from host to host, being interpreted and
+  inspected and reapeated at each hop, untill they reach their
+  destination.
+- The *traceroute* program lets you follow packets as they travel
+  between hosts, viewing what hosts they pass through to reach their
+  destination.
+- Microsoft version: tracert
+
+* Our First Traceroute
+
+- Just give the destination server
+
+#+begin_src sh :exports both :eval never-export :results verbatim
+traceroute www.google.com
+#+end_src
+
+#+RESULTS:
+#+begin_example
+traceroute to www.google.com (142.250.192.100), 30 hops max, 60 byte packets
+ 1  _gateway (192.168.0.1)  1.837 ms  1.910 ms  2.248 ms
+ 2  10.201.32.1 (10.201.32.1)  5.090 ms  12.413 ms  12.392 ms
+ 3  * * *
+ 4  172.19.5.5 (172.19.5.5)  12.306 ms  12.284 ms  12.263 ms
+ 5  203.92.63.181.reverse.spectranet.in (203.92.63.181)  12.239 ms  12.218 ms  12.196 ms
+ 6  203.92.63.146.reverse.spectranet.in (203.92.63.146)  22.868 ms 203.92.63.63.reverse.spectranet.in (203.92.63.63)  20.932 ms 203.92.63.146.reverse.spectranet.in (203.92.63.146)  32.225 ms
+ 7  72.14.211.181 (72.14.211.181)  33.424 ms  32.136 ms  32.111 ms
+ 8  108.170.248.161 (108.170.248.161)  25.307 ms 108.170.248.177 (108.170.248.177)  32.061 ms 108.170.248.161 (108.170.248.161)  33.305 ms
+ 9  72.14.237.11 (72.14.237.11)  32.011 ms  31.986 ms  23.412 ms
+10  bom12s17-in-f4.1e100.net (142.250.192.100)  31.936 ms  29.043 ms  33.006 ms
+#+end_example
+
+- Each following line is a separete host (router or router like device,
+such as firewall). The _gateway in above line is my own router.
+- The number at the start of the line is the hop number.
+- You see three timestamps: One for each packet sent to the hop. Where
+  a single packet might get lost, sending three packets gives a good
+  chance of somthing getting through.
+- At hop 3, you can see three asteriks. They indicate lost
+  packets. Infact in some cases there will be only one or two asterik.
+
+* Traceroute Errors
+
+** Slow Traces
+
+- Traceroute might run very, verly slowly.
+- You can run it quickly without dns, using /-n/ option for Unix or
+  /-d/ for Windows.
+
+#+begin_src sh :exports both :eval never-export :results verbatim
+traceroute -n www.google.com
+#+end_src
+
+#+RESULTS:
+#+begin_example
+traceroute to www.google.com (216.58.203.36), 30 hops max, 60 byte packets
+ 1  192.168.0.1  4.181 ms  4.160 ms  4.379 ms
+ 2  10.201.32.1  6.344 ms  10.352 ms  10.324 ms
+ 3  * * *
+ 4  172.19.5.5  10.363 ms  10.527 ms  10.710 ms
+ 5  203.92.63.181  10.454 ms  10.231 ms  10.627 ms
+ 6  203.92.63.146  30.628 ms  30.891 ms 203.92.63.63  21.095 ms
+ 7  72.14.211.181  37.017 ms  35.800 ms  43.830 ms
+ 8  108.170.248.161  48.922 ms  56.994 ms 108.170.248.177  58.486 ms
+ 9  216.239.54.147  43.625 ms 216.239.54.85  38.649 ms 216.239.54.147  38.392 ms
+10  216.58.203.36  56.502 ms  40.466 ms  38.074 ms
+#+end_example
+
+** starring out
+
+In the above traceroute output, you see something like this:
+
+ #+begin_example
+ 2  10.201.32.1  6.344 ms  10.352 ms  10.324 ms
+ 3  * * *
+ 4  172.19.5.5  10.363 ms  10.527 ms  10.710 ms
+ #+end_example
+
+- It seems a single host along the path doesn't respond to traceroute
+requests, but hosts beyond it do. You might try from a public
+traceroute server to avoid this kind of issue.
+- Also some ISPs filter or rate-limit traceroute traffic.
+
+** Time Spikes
+
+- Sometimes you'll see a hop with very high times compares to the
+  hosts around it.
+- Routers are designed to forward traffic. Responding to traffic
+  addressed to the router itself takes more effor than forwarding
+  traffic. Router respond to traceroutes and pings at a low priority.
+
+** Time Jumps
+
+- Timestamps might get really high at a certain hop and remaining high
+  at all following hops.
+- A possible reason for that would be that the traffic is moving
+  between continents.
+
+** Multiple Hosts at One Hop
+
+- Sometimes you'll get multiple hostnames at one hop. Each hostname
+  gets one or more timestamps.
+- Networks can load balance traffic just as servers can. A busy
+  connection might have multiple routers. Each will return its own
+  traceroute timestamp to the client.
+
+** !Errors
+
+- Sometimes a traceroute ends in an error code like !H or !X.
+- !H means that the next host is unreachable. The path is broken.
+- !N error means that the entire destination network is unreachable.
+- !A, !X or !Z means further communication is administratively
+  probhibited.
+
+* Identitying Address and Domain Owners
+
+- whois service can be used for identitying domain owners.
+
+* Asymmetric Routing and Traceroute Servers
+
+- Each router makes its own independent decisions about how to route
+  traffic. The resulting mishmash of paths is called asymmetric
+  routing. It's simultaneously a key part of how the Internet works.
+
+* Ongoing Traceroute: mtr
+
+- If you want to watch network routse on an ongoing basis, *mtr* (my
+  trace route) is available as a package on all operating systems.
+- It runs traceroute continously and prints packet and timing
+  statistics.
+
+* How Should You Use Traceroute ?
+
+- Good for diagnosiging if a packet is reaching to a destination
+  client or a server.
+- More guide: [[https://www.youtube.com/watch?v=WL0ZTcfSvB4][Richard Steenbergen's presentation]]

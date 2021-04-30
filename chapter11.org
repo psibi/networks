@@ -1,0 +1,46 @@
+* Server Packet Filtering
+
+* TOC
+  :PROPERTIES:
+  :TOC:      :include all :depth 3
+  :END:
+
+:CONTENTS:
+- [[#server-packet-filtering][Server Packet Filtering]]
+- [[#toc][TOC]]
+- [[#network-intrusions][Network Intrusions]]
+- [[#server-packet-filtering][Server Packet Filtering]]
+  - [[#filtering-inbound-traffic][Filtering Inbound Traffic]]
+  - [[#filtering-outbound-traffic][Filtering Outbound Traffic]]
+- [[#packet-filtering-configurations][Packet Filtering Configurations]]
+:END:
+
+
+- This feature is frequently called a firewall.
+- Operating systems use packet filters similar to those found on
+  routers and hardware firewalls.
+
+* Network Intrusions
+
+- Packet filtering is part of a security strategy.
+- An intruder can't compromise a machine they cannot directly or
+  indirectly interact with.
+
+* Server Packet Filtering
+
+** Filtering Inbound Traffic
+
+- Each open TCP/IP port on a host offers possible ways for an attacker
+  to penetrate the host.
+- Block everything except what the server specifically provides.
+
+** Filtering Outbound Traffic
+
+- Same advice: Permit only what the server needs to perform its
+  function.
+
+* Packet Filtering Configurations
+
+- Some packet filters can be dynamically adjusted on the fly.
+- Put your packet filter rules in a configuration file that the OS
+  cannot change.

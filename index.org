@@ -12,6 +12,10 @@ Michael W Lucas. You can access it [[https://psibi.in/networks][https://psibi.in
 - [[file:chapter4.org][Chapter 4: IPv6]]
 - [[file:chapter5.org][Chapter 5: TCP/IP]]
 - [[file:chapter6.org][Chapter 6: Viewing Network Connections]]
+- [[file:chapter7.org][Chapter 7]]
+- [[file:chapter8.org][Chapter 8]]
+- [[file:chapter9.org][Chapter 9]]
+- [[file:chapter10.org][Chapter 10]]
 
 ** Static images
 
