@@ -12,10 +12,12 @@ Michael W Lucas. You can access it [[https://psibi.in/networks][https://psibi.in
 - [[file:chapter4.org][Chapter 4: IPv6]]
 - [[file:chapter5.org][Chapter 5: TCP/IP]]
 - [[file:chapter6.org][Chapter 6: Viewing Network Connections]]
-- [[file:chapter7.org][Chapter 7]]
-- [[file:chapter8.org][Chapter 8]]
-- [[file:chapter9.org][Chapter 9]]
-- [[file:chapter10.org][Chapter 10]]
+- [[file:chapter7.org][Chapter 7: Network Testing Basics]]
+- [[file:chapter8.org][Chapter 8: the Domain Name System]]
+- [[file:chapter9.org][Chapter 9: Packet Sniffing]]
+- [[file:chapter10.org][Chapter 10: Creating Traffic]]
+- [[file:chapter11.org][Chapter 11: Server Packet Filtering]]
+- [[file:chapter12.org][Chapter 12: Tracing Problems]]
 
 ** Static images
 
